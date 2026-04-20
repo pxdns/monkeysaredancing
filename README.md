@@ -1,3 +1,4 @@
+<img width="1920" height="1080" alt="inverted" src="https://github.com/user-attachments/assets/8b00d8a5-3cd1-4310-921d-c4a064a63883" />
 # stansalone
 
  AES-256 encryption and Google OAuth authentication. dont try
