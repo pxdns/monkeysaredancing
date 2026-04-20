@@ -803,8 +803,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             try {
                 const text = await file.text();
-                await processHTMLImport(text, file.name);
-                status.textContent = `imported: ${file.name}`;
+                const result = await processHTMLImport(text, file.name);
+                if (result.isPixelclient) {
+                    status.textContent = `pixelclient stored: ${file.name} - you can now delete the original file`;
+                } else {
+                    status.textContent = `imported settings from: ${file.name}`;
+                }
                 status.style.color = 'var(--retro-green)';
             } catch (error) {
                 status.textContent = 'import failed: ' + error.message;
@@ -819,10 +823,27 @@ document.addEventListener('DOMContentLoaded', () => {
     autoLoadTexturePacks();
 });
 
-// Process HTML file import
+// Process HTML file import - stores pixelclient in IndexedDB
 async function processHTMLImport(htmlContent, filename) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlContent, 'text/html');
+    
+    // Check if this is a pixelclient file (contains eaglercraft or specific markers)
+    const isPixelclient = htmlContent.includes('eaglercraft') || 
+                          htmlContent.includes('eagler') ||
+                          filename.toLowerCase().includes('pixel') ||
+                          filename.toLowerCase().includes('client');
+    
+    // If it's a pixelclient file, store the entire HTML in IndexedDB
+    if (isPixelclient) {
+        try {
+            await storePixelclientInDB(htmlContent);
+            console.log('[import] pixelclient stored in IndexedDB:', filename);
+        } catch (error) {
+            console.error('[import] failed to store pixelclient:', error);
+            throw new Error('failed to store pixelclient: ' + error.message);
+        }
+    }
     
     // Extract localStorage data
     const scripts = doc.querySelectorAll('script');
@@ -870,6 +891,8 @@ async function processHTMLImport(htmlContent, filename) {
     
     return {
         filename,
+        isPixelclient,
+        pixelclientStored: isPixelclient,
         localStorageImported: localStorageData ? Object.keys(localStorageData).length : 0,
         texturePacksFound: epkMatches.length
     };
