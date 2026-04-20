@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Standalone - Retroscope Launcher</title>
+    <meta property="og:title" content="Pixel Standalone">
+    <meta property="og:description" content="Retroscope Client Launcher with AES-256 Encryption">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <div id="authScreen" class="screen">
+        <div class="crt-overlay"></div>
+        <div class="retro-container">
+            <h1 class="retro-title">PIXEL STANDALONE</h1>
+            <p class="retro-subtitle">:: RETROSCOPE EDITION ::</p>
+            
+            <div class="button-grid">
+                <button class="retro-btn js-btn" onclick="launchClient('js')">
+                    <span class="btn-icon">JS</span>
+                    <span class="btn-text">TUFF CLIENT JS</span>
+                </button>
+                
+                <button class="retro-btn wasm-btn" onclick="launchClient('wasm')">
+                    <span class="btn-icon">WASM</span>
+                    <span class="btn-text">TUFFCLIENT WASM</span>
+                </button>
+                
+                <button class="retro-btn xp-btn" onclick="launchXPClient()">
+                    <span class="btn-icon">XP</span>
+                    <span class="btn-text">XPCLIENT</span>
+                </button>
+                
+                <button class="retro-btn launcher-btn" onclick="showNexoModal()">
+                    <span class="btn-icon">NEXO</span>
+                    <span class="btn-text">NEXO CLIENT</span>
+                </button>
+            </div>
+            
+            <div class="import-section">
+                <h3 class="import-title">[ IMPORT MINECRAFT SETTINGS ]</h3>
+                <div class="import-methods">
+                    <div class="import-option">
+                        <label>Option 1: Paste JSON</label>
+                        <textarea id="localStorageImport" placeholder='Paste your localStorage JSON here...'></textarea>
+                    </div>
+                    <div class="import-option">
+                        <label>Option 2: Upload JSON file</label>
+                        <input type="file" id="localStorageFile" accept=".json">
+                    </div>
+                    <button id="importSettingsBtn" class="import-btn">IMPORT SETTINGS</button>
+                    <p id="importStatus"></p>
+                </div>
+            </div>
+            
+            <div class="auth-section" id="authSection">
+                <div id="g_id_onload" data-client_id="439714968719-ko13oc35j978s6oc47rvihutl2omrc98.apps.googleusercontent.com" data-callback="handleCredentialResponse" data-auto_prompt="false"></div>
+                <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left" data-width="300"></div>
+                <p class="auth-note">Sign in with Google to access protected clients</p>
+                <p class="auth-emails">Authorized: e42xec@gmail.com, xpknown@gmail.com</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Nexo Client Modal -->
+    <div id="nexoModal" class="modal hidden">
+        <div class="modal-content">
+            <h2 class="modal-title">SELECT CLIENT MODE</h2>
+            <div class="modal-options">
+                <button class="modal-option js-option" onclick="launchNexoClient('js')">
+                    <span class="option-icon">JS</span>
+                    <span class="option-name">JavaScript Mode</span>
+                    <span class="option-desc">Standard JS execution - Offline</span>
+                </button>
+                <button class="modal-option wasm-option" onclick="launchNexoClient('wasm')">
+                    <span class="option-icon">WASM</span>
+                    <span class="option-name">WASM Mode</span>
+                    <span class="option-desc">WebAssembly with JSPI - Online</span>
+                </button>
+            </div>
+            <button class="modal-close-btn" onclick="hideNexoModal()">[ CANCEL ]</button>
+        </div>
+    </div>
+    
+    <div id="clientContainer" class="hidden"></div>
+    
+    <script src="auth.js"></script>
+    <script src="launcher.js"></script>
+</body>
+</html>
