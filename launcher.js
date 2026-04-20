@@ -281,7 +281,7 @@ async function launchNexoClient(mode) {
         window.location.href = 'nexoclient/JS/Offline/index.html';
     } else if (mode === 'wasm') {
         // Use root WASM folder which has all required assets
-        window.location.href = 'WASM/index.html';
+        window.location.href = 'nexoclient/wasm/online/index.html';
     }
 }
 
