@@ -107,12 +107,24 @@
                 <h3 class="import-title">[ import pixelclient to storage ]</h3>
                 <div class="import-methods">
                     <div class="import-option">
-                        <label>upload pixelclient.html to indexeddb</label>
-                        <p class="export-desc">store the pixelclient html in indexeddb so the file doesn't need to exist. ~25mb file.</p>
+                        <label>upload pixelclient.html or dih.html to indexeddb</label>
+                        <p class="export-desc">store the pixelclient html in indexeddb so the file doesn't need to exist. ~25mb file. works on any device after import.</p>
                         <input type="file" id="pixelclientFile" accept=".html">
                     </div>
                     <button id="importPixelclientBtn" class="import-btn pixelclient-btn">import pixelclient</button>
                     <p id="pixelclientImportStatus"></p>
+                </div>
+            </div>
+            
+            <div class="import-section" id="pixelclientExportSection">
+                <h3 class="import-title">[ export pixelclient from storage ]</h3>
+                <div class="import-methods">
+                    <div class="import-option">
+                        <label>download pixelclient.html from indexeddb</label>
+                        <p class="export-desc">export the stored pixelclient to transfer to another device or backup. download as html file.</p>
+                    </div>
+                    <button id="exportPixelclientBtn" class="import-btn export-btn">export pixelclient</button>
+                    <p id="pixelclientExportStatus"></p>
                 </div>
             </div>
             
