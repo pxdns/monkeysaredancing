@@ -480,27 +480,49 @@ async function importPixelclientToDB(fileContent) {
     }
 }
 
-// Import button handler
+// Import button handler with XPClient password check
+const XPC_CLIENT_PASSWORD = 'pxdns_onced_2024'; // Hardcoded password for XPClient imports
+
 document.getElementById('importSettingsBtn').addEventListener('click', () => {
     const textarea = document.getElementById('localStorageImport');
     const fileInput = document.getElementById('localStorageFile');
+    const passwordInput = document.getElementById('xpclientImportPassword');
     const status = document.getElementById('importStatus');
-
+    
+    const password = passwordInput.value.trim();
     let jsonData = textarea.value.trim();
+
+    // Check if data contains xpclient marker and validate password
+    const isXPClientData = jsonData.includes('"xpclient"') || jsonData.includes('"xp_client"');
+    
+    if (isXPClientData && password !== XPC_CLIENT_PASSWORD) {
+        status.textContent = 'wrong password for xpclient import';
+        status.style.color = '#ff5555';
+        alert('invalid password for xpclient settings import');
+        return;
+    }
 
     // Try file upload first if no text
     if (!jsonData && fileInput.files.length > 0) {
         const file = fileInput.files[0];
         const reader = new FileReader();
         reader.onload = (e) => {
-            processImport(e.target.result, status);
+            const fileContent = e.target.result;
+            const isXPFile = fileContent.includes('"xpclient"') || fileContent.includes('"xp_client"');
+            if (isXPFile && password !== XPC_CLIENT_PASSWORD) {
+                status.textContent = 'wrong password for xpclient import';
+                status.style.color = '#ff5555';
+                alert('invalid password for xpclient settings import');
+                return;
+            }
+            processImport(fileContent, status);
         };
         reader.readAsText(file);
         return;
     }
 
     if (!jsonData) {
-        status.textContent = 'Please paste your settings JSON or upload a JSON file.';
+        status.textContent = 'please paste your settings json or upload a json file';
         status.style.color = '#ff5555';
         return;
     }

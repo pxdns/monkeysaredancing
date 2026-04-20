@@ -73,6 +73,11 @@
                 <h3 class="import-title">[ import minecraft settings ]</h3>
                 <div class="import-methods">
                     <div class="import-option">
+                        <label>xpclient password (required for xpclient imports)</label>
+                        <input type="password" id="xpclientImportPassword" placeholder="enter xpclient password" style="background:rgba(0,0,0,0.5);border:1px solid var(--retro-amber);color:var(--retro-amber);padding:10px;font-family:'instrument serif',serif;width:100%;">
+                        <p class="export-desc" style="margin-top:5px;">password required to decrypt and import xpclient settings. leave blank for other clients.</p>
+                    </div>
+                    <div class="import-option">
                         <label>option 1: paste settings json</label>
                         <textarea id="localStorageImport" placeholder='Paste your localStorage JSON here...'></textarea>
                     </div>
