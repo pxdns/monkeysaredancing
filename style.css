@@ -143,6 +143,11 @@ body {
     color: var(--retro-bg);
 }
 
+.astra-btn .btn-icon {
+    background: #9b59b6;
+    color: #fff;
+}
+
 .btn-text {
     font-size: 1.3rem;
     letter-spacing: 1px;

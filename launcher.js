@@ -57,6 +57,23 @@ async function launchClient(type) {
     }
 }
 
+// Launch AstraClient (1.12 or 1.8) - no auth required
+function launchAstraClient(version) {
+    // Import any pending settings first
+    const pendingImport = sessionStorage.getItem('pending_localstorage_import');
+    if (pendingImport) {
+        importLocalStorage(pendingImport);
+        sessionStorage.removeItem('pending_localstorage_import');
+    }
+    
+    // Redirect to AstraClient version
+    if (version === '112') {
+        window.location.href = 'astra112/index.html';
+    } else if (version === '18') {
+        window.location.href = 'astra18/index.html';
+    }
+}
+
 // Global flag to track if xpclient launch is pending
 let xpclientPending = false;
 
