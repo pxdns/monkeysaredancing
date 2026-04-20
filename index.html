@@ -103,6 +103,20 @@
                 </div>
             </div>
             
+            <div class="import-section" id="universalImportSection">
+                <h3 class="import-title">[ import everything from html ]</h3>
+                <div class="import-methods">
+                    <div class="import-option">
+                        <label>upload eaglercraft/pixelclient html file</label>
+                        <p class="export-desc">extracts all texture packs and minecraft settings from an html file. imports everything to your current device.</p>
+                        <input type="file" id="universalImportFile" accept=".html">
+                    </div>
+                    <button id="universalImportBtn" class="import-btn" style="background: linear-gradient(135deg, #9b59b6, #8e44ad); border-color: #9b59b6;">import everything</button>
+                    <div id="universalImportProgress" style="margin-top:10px;font-size:0.9rem;color:rgba(255,255,255,0.7);"></div>
+                    <p id="universalImportStatus"></p>
+                </div>
+            </div>
+            
             <div class="import-section" id="pixelclientImportSection">
                 <h3 class="import-title">[ import pixelclient to storage ]</h3>
                 <div class="import-methods">

@@ -946,4 +946,148 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    
+    // Universal import - extracts everything from HTML file
+    const universalBtn = document.getElementById('universalImportBtn');
+    const universalFile = document.getElementById('universalImportFile');
+    const universalStatus = document.getElementById('universalImportStatus');
+    const universalProgress = document.getElementById('universalImportProgress');
+    
+    if (universalBtn) {
+        universalBtn.addEventListener('click', () => {
+            if (!universalFile.files.length) {
+                universalStatus.textContent = 'please select an html file';
+                universalStatus.style.color = '#ff5555';
+                return;
+            }
+            
+            const file = universalFile.files[0];
+            universalStatus.textContent = '';
+            universalProgress.textContent = 'reading file...';
+            
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const html = e.target.result;
+                    universalProgress.textContent = 'parsing file...';
+                    
+                    // Create a parser to extract data from the HTML
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    let importedPacks = 0;
+                    let importedSettings = 0;
+                    
+                    // Extract localStorage data (Minecraft settings)
+                    // Look for localStorage.setItem calls or stored data in the HTML
+                    universalProgress.textContent = 'extracting settings...';
+                    
+                    // Method 1: Look for script tags with localStorage operations
+                    const scripts = doc.querySelectorAll('script');
+                    let localStorageData = {};
+                    
+                    scripts.forEach(script => {
+                        const text = script.textContent || '';
+                        // Match localStorage.setItem('key', 'value') patterns
+                        const setItemMatches = text.matchAll(/localStorage\.setItem\(['"]([^'"]+)['"],\s*['"]([^'"]*)['"]\)/g);
+                        for (const match of setItemMatches) {
+                            localStorageData[match[1]] = match[2];
+                        }
+                    });
+                    
+                    // Import settings to current localStorage
+                    for (const [key, value] of Object.entries(localStorageData)) {
+                        // Skip auth and sensitive keys
+                        if (!key.includes('auth') && !key.includes('token')) {
+                            localStorage.setItem(key, value);
+                            importedSettings++;
+                        }
+                    }
+                    
+                    // Extract texture packs from various possible sources in the HTML
+                    universalProgress.textContent = 'extracting texture packs...';
+                    
+                    // Method 1: Look for texture pack data in script tags (common in eaglercraft exports)
+                    let texturePacks = [];
+                    
+                    scripts.forEach(script => {
+                        const text = script.textContent || '';
+                        
+                        // Look for texture pack arrays or objects
+                        const packMatches = text.match(/texturePacks?\s*=\s*(\[.*?\]);/s) || 
+                                          text.match(/packs?\s*:\s*(\[.*?\])/s);
+                        if (packMatches) {
+                            try {
+                                const parsed = JSON.parse(packMatches[1]);
+                                if (Array.isArray(parsed)) {
+                                    texturePacks = texturePacks.concat(parsed);
+                                }
+                            } catch (e) {}
+                        }
+                        
+                        // Look for base64 encoded texture data
+                        const base64Matches = text.matchAll(/data:image\/[^;]+;base64,([A-Za-z0-9+/=]{100,})/g);
+                        for (const match of base64Matches) {
+                            texturePacks.push({
+                                name: 'extracted_pack_' + texturePacks.length,
+                                data: match[1],
+                                timestamp: Date.now()
+                            });
+                        }
+                    });
+                    
+                    // Method 2: Look for canvas elements with texture data
+                    const canvases = doc.querySelectorAll('canvas[data-texture]');
+                    canvases.forEach((canvas, idx) => {
+                        const dataUrl = canvas.toDataURL ? null : canvas.getAttribute('data-texture');
+                        if (dataUrl) {
+                            texturePacks.push({
+                                name: 'canvas_texture_' + idx,
+                                data: dataUrl,
+                                timestamp: Date.now()
+                            });
+                        }
+                    });
+                    
+                    // Store extracted texture packs to IndexedDB
+                    if (texturePacks.length > 0) {
+                        const db = await openTextureDB();
+                        const transaction = db.transaction([TEXTURE_STORE_NAME], 'readwrite');
+                        const store = transaction.objectStore(TEXTURE_STORE_NAME);
+                        
+                        for (const pack of texturePacks) {
+                            if (pack.name && pack.data) {
+                                await new Promise((resolve, reject) => {
+                                    const request = store.put(pack);
+                                    request.onsuccess = () => {
+                                        importedPacks++;
+                                        resolve();
+                                    };
+                                    request.onerror = () => reject(request.error);
+                                });
+                            }
+                        }
+                    }
+                    
+                    universalProgress.textContent = '';
+                    universalStatus.textContent = `import complete: ${importedSettings} settings, ${importedPacks} texture packs`;
+                    universalStatus.style.color = '#00ff41';
+                    
+                    console.log('[universal import] imported:', importedSettings, 'settings,', importedPacks, 'packs');
+                    
+                } catch (err) {
+                    console.error('[universal import] error:', err);
+                    universalProgress.textContent = '';
+                    universalStatus.textContent = 'import failed: ' + err.message;
+                    universalStatus.style.color = '#ff5555';
+                }
+            };
+            reader.onerror = () => {
+                universalProgress.textContent = '';
+                universalStatus.textContent = 'error reading file';
+                universalStatus.style.color = '#ff5555';
+            };
+            reader.readAsText(file);
+        });
+    }
 });
