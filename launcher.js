@@ -481,4 +481,45 @@ document.addEventListener('DOMContentLoaded', () => {
             processTexturePackImport(jsonData, textureStatus);
         });
     }
+    
+    // Export texture packs button handler
+    const exportBtn = document.getElementById('exportTextureBtn');
+    const exportStatus = document.getElementById('exportStatus');
+    
+    if (exportBtn) {
+        exportBtn.addEventListener('click', async () => {
+            try {
+                exportStatus.textContent = 'Reading IndexedDB...';
+                exportStatus.style.color = '#00ffff';
+                
+                const packsJson = await exportTexturePacks();
+                const packs = JSON.parse(packsJson);
+                
+                if (packs.length === 0) {
+                    exportStatus.textContent = 'No texture packs found in IndexedDB.';
+                    exportStatus.style.color = '#ff5555';
+                    return;
+                }
+                
+                // Create downloadable file
+                const blob = new Blob([packsJson], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `texture-packs-backup-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                exportStatus.textContent = `Exported ${packs.length} texture pack(s) successfully!`;
+                exportStatus.style.color = '#00ff41';
+                
+            } catch (error) {
+                console.error('[Export] Failed:', error);
+                exportStatus.textContent = 'Export failed. Make sure you have texture packs saved.';
+                exportStatus.style.color = '#ff5555';
+            }
+        });
+    }
 });
