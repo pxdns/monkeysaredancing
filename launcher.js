@@ -66,11 +66,11 @@ function launchAstraClient(version) {
         sessionStorage.removeItem('pending_localstorage_import');
     }
     
-    // Redirect to AstraClient version
+    // Redirect to AstraClient version in ./astra folder
     if (version === '112') {
-        window.location.href = 'astra112/index.html';
+        window.location.href = 'astra/astra112.html';
     } else if (version === '18') {
-        window.location.href = 'astra18/index.html';
+        window.location.href = 'astra/astra18.html';
     }
 }
 
