@@ -203,7 +203,7 @@ async function extractAssets(results) {
 
 // Main execution
 async function main() {
-    console.log('🚀 Nexolauncher Scraper Starting...');
+    console.log(' nexolauncher scraper starting...');
     console.log('='.repeat(50));
     
     const results = {};
@@ -220,7 +220,7 @@ async function main() {
     
     // Summary report
     console.log('\n' + '='.repeat(50));
-    console.log('📊 SCRAPING COMPLETE');
+    console.log(' done scraping');
     console.log('='.repeat(50));
     console.log(`\nData saved to: ./scraped_data/`);
     console.log('Files:');
