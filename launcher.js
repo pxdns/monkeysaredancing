@@ -127,15 +127,11 @@ async function launchClient(type) {
     }
 
     if (type === 'js') {
-        // Load Tuff Client JS directly
-        const files = ['J','S','/','c','l','a','s','s','e','s','.','j','s'];
-        const script = document.createElement('script');
-        script.src = files.join('');
-        document.body.innerHTML = '';
-        document.body.appendChild(script);
+        // Load Tuff Client JS from root JS folder
+        window.location.href = 'JS/index.html';
     } else if (type === 'wasm') {
-        // Load WASM client from local files
-        window.location.href = 'nexoclient/WASM-GC/Online/index.html';
+        // Load WASM client from root WASM folder (has all assets)
+        window.location.href = 'WASM/index.html';
     }
 }
 
@@ -302,11 +298,11 @@ async function launchNexoClient(mode) {
     hideNexoModal();
 
     if (mode === 'js') {
-        // Redirect to copied JS client
-        window.location.href = 'nexoclient/JS/Offline/index.html';
+        // Redirect to root JS client
+        window.location.href = 'JS/index.html';
     } else if (mode === 'wasm') {
         // Use root WASM folder which has all required assets
-        window.location.href = 'nexoclient/WASM-GC/Online/index.html';
+        window.location.href = 'WASM/index.html';
     }
 }
 
@@ -543,7 +539,7 @@ async function loadProtectedPixelClient() {
     
     try {
         // Only try to get from IndexedDB - no file fallback
-        const content = await getPixelclientFromDB();
+        let content = await getPixelclientFromDB();
         
         if (!content) {
             // Not in storage - show import prompt
@@ -581,7 +577,7 @@ async function loadProtectedPixelClient() {
         content = content.replace('</head>', protectionScript + '</head>');
         container.innerHTML = content;
         
-        console.log(`[Pixelclient] Loaded successfully from ${source}`);
+        console.log('[Pixelclient] Loaded successfully from IndexedDB');
         
     } catch (error) {
         console.error('[Pixelclient] Error loading:', error);
@@ -772,7 +768,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const htmlFileInput = document.getElementById('htmlFileInput');
     
     if (importLocalstorageBtn) {
-        importLocalstorageBtn.addEventListener('click', () => {
+        importLocalstorageBtn.addEventListener('click', async () => {
             const input = document.getElementById('localstorageInput');
             const status = document.getElementById('importStatus');
             const data = input.value.trim();
@@ -784,7 +780,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             try {
-                importLocalStorage(data);
+                await importLocalStorage(data);
                 status.textContent = 'localstorage imported successfully';
                 status.style.color = 'var(--retro-green)';
                 input.value = '';
