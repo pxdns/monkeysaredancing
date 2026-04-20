@@ -1,4 +1,3 @@
-<img width="2048" height="1152" alt="image" src="https://github.com/user-attachments/assets/f13d5ef9-efa5-423e-bc8e-76bd0369b660" />
 <img width="1920" height="1080" alt="inverted" src="https://github.com/user-attachments/assets/8b00d8a5-3cd1-4310-921d-c4a064a63883" />
 # stansalone
 
