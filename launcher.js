@@ -35,10 +35,8 @@ function importLocalStorage(jsonData) {
     }
 }
 
-// Launch JS Client (Tuff Client)
+// Launch JS Client (Tuff Client) - no auth required
 async function launchClient(type) {
-    if (!await requireAuth()) return;
-
     // Import any pending settings first
     const pendingImport = sessionStorage.getItem('pending_localstorage_import');
     if (pendingImport) {
@@ -59,9 +57,17 @@ async function launchClient(type) {
     }
 }
 
-// Launch XPClient (protected)
+// Launch XPClient (protected) - auth required
 async function launchXPClient() {
     if (!await requireAuth()) return;
+    
+    // verify authorized email
+    const auth = JSON.parse(localStorage.getItem('pixel_auth') || '{}');
+    const authorizedEmails = ['e42xec@gmail.com', 'xpknown@gmail.com'];
+    if (!authorizedEmails.includes(auth.email)) {
+        alert('unauthorized email: ' + auth.email);
+        return;
+    }
 
     const container = document.getElementById('clientContainer');
     container.classList.remove('hidden');
@@ -87,10 +93,8 @@ function hideNexoModal() {
     document.getElementById('nexoModal').classList.add('hidden');
 }
 
-// Launch Nexo Client (from nexolauncher)
+// Launch Nexo Client (from nexolauncher) - no auth required
 async function launchNexoClient(mode) {
-    if (!await requireAuth()) return;
-
     // Import any pending settings first
     const pendingImport = sessionStorage.getItem('pending_localstorage_import');
     if (pendingImport) {
