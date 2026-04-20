@@ -8,6 +8,11 @@
     <meta property="og:title" content="Google Docs">
     <meta property="og:description" content="Create and edit web-based documents, spreadsheets, and presentations. Store documents online and access them from any computer.">
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4285f4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Google Docs">
     <script>
         // Permanent title override - always show as Google Docs
         (function() {
@@ -117,7 +122,107 @@
     
     <div id="clientContainer" class="hidden"></div>
     
+    <!-- PWA Offline Indicator -->
+    <div id="offlineIndicator" class="offline-indicator">
+        You are offline - Some features may be limited
+    </div>
+    
+    <!-- PWA Install Button (shown when installable) -->
+    <button id="pwaInstallBtn" class="pwa-install-btn" onclick="installPWA()" style="display: none;">
+        Install App
+    </button>
+    
     <script src="auth.js"></script>
     <script src="launcher.js"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('[PWA] Service Worker registered:', registration.scope);
+                        
+                        // Handle updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    console.log('[PWA] New version available - refresh to update');
+                                    // Optional: Show update notification
+                                    if (confirm('A new version is available! Refresh to update?')) {
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('[PWA] Service Worker registration failed:', error);
+                    });
+                
+                // Listen for messages from service worker
+                navigator.serviceWorker.addEventListener('message', (event) => {
+                    if (event.data.type === 'OFFLINE_READY') {
+                        console.log('[PWA] App is ready for offline use');
+                    }
+                });
+            });
+        }
+        
+        // PWA Install Prompt handling
+        let deferredPrompt;
+        const installBtn = document.getElementById('pwaInstallBtn');
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log('[PWA] Install prompt available');
+            
+            // Show the install button
+            if (installBtn) {
+                installBtn.style.display = 'block';
+                setTimeout(() => installBtn.classList.add('visible'), 100);
+            }
+        });
+        
+        // Online/Offline detection
+        const offlineIndicator = document.getElementById('offlineIndicator');
+        
+        function updateOnlineStatus() {
+            if (navigator.onLine) {
+                offlineIndicator.classList.remove('visible');
+                console.log('[PWA] Connection restored');
+            } else {
+                offlineIndicator.classList.add('visible');
+                console.log('[PWA] Gone offline');
+            }
+        }
+        
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        
+        // Check initial status
+        updateOnlineStatus();
+        
+        async function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('[PWA] User accepted install');
+                } else {
+                    console.log('[PWA] User dismissed install');
+                }
+                deferredPrompt = null;
+            }
+        }
+        
+        // Check if app was installed
+        window.addEventListener('appinstalled', () => {
+            console.log('[PWA] App was installed');
+            deferredPrompt = null;
+        });
+    </script>
 </body>
 </html>
