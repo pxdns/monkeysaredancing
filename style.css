@@ -270,6 +270,24 @@ body {
     min-height: 20px;
 }
 
+/* Texture Pack Import Button - Distinct amber color */
+.texture-btn {
+    background: var(--retro-amber);
+    color: var(--retro-bg);
+}
+
+.texture-btn:hover {
+    background: #ffcc00;
+    box-shadow: 0 0 15px rgba(255, 176, 0, 0.6);
+}
+
+#textureImportStatus {
+    text-align: center;
+    font-size: 1rem;
+    margin-top: 10px;
+    min-height: 20px;
+}
+
 /* Auth Section */
 .auth-section {
     text-align: center;

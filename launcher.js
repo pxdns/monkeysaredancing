@@ -298,6 +298,144 @@ function processImport(jsonData, status) {
     }
 }
 
+// ==================== TEXTURE PACK IMPORT ====================
+// Texture packs are stored in IndexedDB, not localStorage
+
+const TEXTURE_PACK_DB_NAME = 'Eaglercraft';
+const TEXTURE_PACK_STORE_NAME = 'resourcePacks';
+const TEXTURE_PACK_DB_VERSION = 1;
+
+// Open IndexedDB connection
+function openTexturePackDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(TEXTURE_PACK_DB_NAME, TEXTURE_PACK_DB_VERSION);
+        
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(TEXTURE_PACK_STORE_NAME)) {
+                db.createObjectStore(TEXTURE_PACK_STORE_NAME, { keyPath: 'name' });
+            }
+        };
+    });
+}
+
+// Import texture pack to IndexedDB
+async function importTexturePack(texturePackData) {
+    try {
+        const db = await openTexturePackDB();
+        
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([TEXTURE_PACK_STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(TEXTURE_PACK_STORE_NAME);
+            
+            // Validate required fields
+            if (!texturePackData.name) {
+                reject(new Error('Texture pack must have a name'));
+                return;
+            }
+            if (!texturePackData.data && !texturePackData.epk) {
+                reject(new Error('Texture pack must have data (base64) or epk field'));
+                return;
+            }
+            
+            // Normalize the data structure
+            const packRecord = {
+                name: texturePackData.name,
+                data: texturePackData.data || texturePackData.epk,
+                metadata: texturePackData.metadata || {},
+                importedAt: new Date().toISOString(),
+                source: 'pixelstandalone_import'
+            };
+            
+            const request = store.put(packRecord);
+            
+            request.onsuccess = () => resolve(true);
+            request.onerror = () => reject(request.error);
+            
+            transaction.oncomplete = () => db.close();
+        });
+    } catch (error) {
+        console.error('[TexturePack] Import failed:', error);
+        throw error;
+    }
+}
+
+// Process texture pack import from JSON string
+async function processTexturePackImport(jsonData, statusElement) {
+    try {
+        jsonData = jsonData.trim();
+        
+        // Handle quoted JSON
+        if ((jsonData.startsWith('"') && jsonData.endsWith('"')) ||
+            (jsonData.startsWith("'") && jsonData.endsWith("'"))) {
+            jsonData = jsonData.slice(1, -1);
+        }
+        
+        const texturePack = JSON.parse(jsonData);
+        
+        // Support both single pack and array of packs
+        const packs = Array.isArray(texturePack) ? texturePack : [texturePack];
+        
+        let imported = 0;
+        let failed = 0;
+        
+        for (const pack of packs) {
+            try {
+                await importTexturePack(pack);
+                imported++;
+            } catch (e) {
+                console.error(`[TexturePack] Failed to import "${pack.name}":`, e);
+                failed++;
+            }
+        }
+        
+        if (failed === 0) {
+            statusElement.textContent = `Successfully imported ${imported} texture pack(s)! Available in client.`;
+            statusElement.style.color = '#00ff41';
+        } else if (imported > 0) {
+            statusElement.textContent = `Imported ${imported} pack(s), ${failed} failed. Check console for details.`;
+            statusElement.style.color = '#ffb000';
+        } else {
+            statusElement.textContent = 'Failed to import texture pack(s). Check format and try again.';
+            statusElement.style.color = '#ff5555';
+        }
+        
+    } catch (error) {
+        console.error('[TexturePack] Parse error:', error);
+        statusElement.textContent = 'Invalid JSON format. Expected: {"name": "...", "data": "base64..."}';
+        statusElement.style.color = '#ff5555';
+    }
+}
+
+// Export all texture packs (for backup)
+async function exportTexturePacks() {
+    try {
+        const db = await openTexturePackDB();
+        
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([TEXTURE_PACK_STORE_NAME], 'readonly');
+            const store = transaction.objectStore(TEXTURE_PACK_STORE_NAME);
+            const request = store.getAll();
+            
+            request.onsuccess = () => {
+                const packs = request.result;
+                db.close();
+                resolve(JSON.stringify(packs, null, 2));
+            };
+            request.onerror = () => {
+                db.close();
+                reject(request.error);
+            };
+        });
+    } catch (error) {
+        console.error('[TexturePack] Export failed:', error);
+        throw error;
+    }
+}
+
 // Navigation functions
 function showMainScreen() {
     document.getElementById('authScreen').classList.remove('hidden');
@@ -309,3 +447,38 @@ function showWASMLauncher() {
     document.getElementById('authScreen').classList.add('hidden');
     document.getElementById('launcherScreen').classList.remove('hidden');
 }
+
+// ==================== EVENT LISTENERS ====================
+
+// Texture pack import button handler
+document.addEventListener('DOMContentLoaded', () => {
+    const textureBtn = document.getElementById('importTextureBtn');
+    const textureTextarea = document.getElementById('texturePackImport');
+    const textureFile = document.getElementById('texturePackFile');
+    const textureStatus = document.getElementById('textureImportStatus');
+    
+    if (textureBtn) {
+        textureBtn.addEventListener('click', () => {
+            let jsonData = textureTextarea.value.trim();
+            
+            // Try file upload first if no text
+            if (!jsonData && textureFile.files.length > 0) {
+                const file = textureFile.files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    processTexturePackImport(e.target.result, textureStatus);
+                };
+                reader.readAsText(file);
+                return;
+            }
+            
+            if (!jsonData) {
+                textureStatus.textContent = 'Please paste texture pack JSON or upload a file.';
+                textureStatus.style.color = '#ff5555';
+                return;
+            }
+            
+            processTexturePackImport(jsonData, textureStatus);
+        });
+    }
+});

@@ -58,15 +58,31 @@
                 <h3 class="import-title">[ IMPORT MINECRAFT SETTINGS ]</h3>
                 <div class="import-methods">
                     <div class="import-option">
-                        <label>Option 1: Paste JSON</label>
+                        <label>Option 1: Paste Settings JSON</label>
                         <textarea id="localStorageImport" placeholder='Paste your localStorage JSON here...'></textarea>
                     </div>
                     <div class="import-option">
-                        <label>Option 2: Upload JSON file</label>
+                        <label>Option 2: Upload Settings JSON</label>
                         <input type="file" id="localStorageFile" accept=".json">
                     </div>
                     <button id="importSettingsBtn" class="import-btn">IMPORT SETTINGS</button>
                     <p id="importStatus"></p>
+                </div>
+            </div>
+            
+            <div class="import-section">
+                <h3 class="import-title">[ IMPORT TEXTURE PACK ]</h3>
+                <div class="import-methods">
+                    <div class="import-option">
+                        <label>Option 1: Paste Texture Pack JSON</label>
+                        <textarea id="texturePackImport" placeholder='Paste texture pack JSON: {"name": "MyPack", "data": "base64data...", "metadata": {...}}'></textarea>
+                    </div>
+                    <div class="import-option">
+                        <label>Option 2: Upload Texture Pack JSON</label>
+                        <input type="file" id="texturePackFile" accept=".json">
+                    </div>
+                    <button id="importTextureBtn" class="import-btn texture-btn">IMPORT TEXTURE PACK</button>
+                    <p id="textureImportStatus"></p>
                 </div>
             </div>
             
