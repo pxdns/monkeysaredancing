@@ -1,5 +1,5 @@
-/* google docs disguise - instrumental serif */
-@import url('https://fonts.googleapis.com/css2?family=instrument+serif:ital@0;1&display=swap');
+/* Google Docs Theme - Instrumental Serif */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
 
 * {
     margin: 0;
@@ -18,14 +18,14 @@
 }
 
 body {
-    font-family: 'instrument serif', serif;
+    font-family: 'Instrument Serif', serif;
     background: var(--retro-bg);
     color: var(--retro-green);
     min-height: 100vh;
     overflow-x: hidden;
 }
 
-/* crt overlay effect */
+/* CRT Overlay Effect */
 .crt-overlay {
     position: fixed;
     top: 0;
@@ -55,7 +55,7 @@ body {
     100% { opacity: 0.98; }
 }
 
-/* screen management */
+/* Screen Management */
 .screen {
     min-height: 100vh;
     display: flex;
@@ -68,7 +68,7 @@ body {
     display: none !important;
 }
 
-/* retro container */
+/* Retro Container */
 .retro-container {
     background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
     border: 3px solid var(--retro-green);
@@ -93,9 +93,9 @@ body {
     pointer-events: none;
 }
 
-/* typography */
+/* Typography */
 .retro-title {
-    font-family: 'press start 2p', cursive;
+    font-family: 'Press Start 2P', cursive;
     font-size: 1.8rem;
     text-align: center;
     color: var(--retro-green);
@@ -108,7 +108,7 @@ body {
 }
 
 .retro-subtitle {
-    font-family: 'vt323', monospace;
+    font-family: 'VT323', monospace;
     font-size: 1.2rem;
     text-align: center;
     color: var(--retro-cyan);
@@ -116,7 +116,7 @@ body {
     letter-spacing: 4px;
 }
 
-/* button grid */
+/* Button Grid */
 .button-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -135,7 +135,7 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    font-family: 'vt323', monospace;
+    font-family: 'VT323', monospace;
     position: relative;
     overflow: hidden;
 }
@@ -162,7 +162,7 @@ body {
 }
 
 .btn-icon {
-    font-family: 'press start 2p', cursive;
+    font-family: 'Press Start 2P', cursive;
     font-size: 0.7rem;
     background: var(--retro-green);
     color: var(--retro-bg);
@@ -190,7 +190,7 @@ body {
     letter-spacing: 1px;
 }
 
-/* import section */
+/* Import Section */
 .import-section {
     border: 2px dashed rgba(0, 255, 65, 0.3);
     padding: 25px;
@@ -199,7 +199,7 @@ body {
 }
 
 .import-title {
-    font-family: 'press start 2p', cursive;
+    font-family: 'Press Start 2P', cursive;
     font-size: 0.65rem;
     color: var(--retro-cyan);
     margin-bottom: 20px;
@@ -228,7 +228,7 @@ body {
     border: 1px solid var(--retro-green);
     color: var(--retro-green);
     padding: 12px;
-    font-family: 'vt323', monospace;
+    font-family: 'VT323', monospace;
     font-size: 0.9rem;
     min-height: 80px;
     resize: vertical;
@@ -243,7 +243,7 @@ body {
     border: 1px solid var(--retro-green);
     color: var(--retro-green);
     padding: 10px;
-    font-family: 'vt323', monospace;
+    font-family: 'VT323', monospace;
 }
 
 .import-btn {
@@ -251,7 +251,7 @@ body {
     color: var(--retro-bg);
     border: none;
     padding: 12px 30px;
-    font-family: 'press start 2p', cursive;
+    font-family: 'Press Start 2P', cursive;
     font-size: 0.65rem;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -263,14 +263,14 @@ body {
     box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
 }
 
-#importstatus {
+#importStatus {
     text-align: center;
     font-size: 1rem;
     margin-top: 10px;
     min-height: 20px;
 }
 
-/* texture pack import button - distinct amber color */
+/* Texture Pack Import Button - Distinct amber color */
 .texture-btn {
     background: var(--retro-amber);
     color: var(--retro-bg);
@@ -281,14 +281,14 @@ body {
     box-shadow: 0 0 15px rgba(255, 176, 0, 0.6);
 }
 
-#textureimportstatus {
+#textureImportStatus {
     text-align: center;
     font-size: 1rem;
     margin-top: 10px;
     min-height: 20px;
 }
 
-/* export button - cyan color to distinguish from import */
+/* Export Button - Cyan color to distinguish from import */
 .export-btn {
     background: var(--retro-cyan);
     color: var(--retro-bg);
@@ -306,14 +306,14 @@ body {
     opacity: 0.8;
 }
 
-#exportstatus {
+#exportStatus {
     text-align: center;
     font-size: 1rem;
     margin-top: 10px;
     min-height: 20px;
 }
 
-/* pixelclient import button - pink color */
+/* Pixelclient Import Button - Pink color */
 .pixelclient-btn {
     background: var(--retro-pink);
     color: var(--retro-bg);
@@ -324,14 +324,14 @@ body {
     box-shadow: 0 0 15px rgba(255, 0, 255, 0.6);
 }
 
-#pixelclientimportstatus {
+#pixelclientImportStatus {
     text-align: center;
     font-size: 1rem;
     margin-top: 10px;
     min-height: 20px;
 }
 
-/* auth section */
+/* Auth Section */
 .auth-section {
     text-align: center;
     padding-top: 20px;
@@ -350,7 +350,7 @@ body {
     margin-top: 10px;
 }
 
-/* launcher screen */
+/* Launcher Screen */
 .launcher-container {
     background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
     border: 3px solid var(--retro-cyan);
@@ -361,7 +361,7 @@ body {
 }
 
 .launcher-title {
-    font-family: 'press start 2p', cursive;
+    font-family: 'Press Start 2P', cursive;
     font-size: 1.4rem;
     color: var(--retro-cyan);
     text-align: center;
@@ -384,7 +384,7 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: left;
-    font-family: 'vt323', monospace;
+    font-family: 'VT323', monospace;
 }
 
 .launcher-option:hover {
@@ -394,7 +394,7 @@ body {
 
 .option-label {
     display: block;
-    font-family: 'press start 2p', cursive;
+    font-family: 'Press Start 2P', cursive;
     font-size: 0.8rem;
     margin-bottom: 8px;
 }
@@ -410,7 +410,7 @@ body {
     border: 2px solid var(--retro-green);
     color: var(--retro-green);
     padding: 15px 40px;
-    font-family: 'press start 2p', cursive;
+    font-family: 'Press Start 2P', cursive;
     font-size: 0.7rem;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -423,8 +423,8 @@ body {
     box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
 }
 
-/* client container */
-#clientcontainer {
+/* Client Container */
+#clientContainer {
     width: 100%;
     height: 100vh;
     position: fixed;
@@ -434,13 +434,13 @@ body {
     background: black;
 }
 
-#clientcontainer iframe {
+#clientContainer iframe {
     width: 100%;
     height: 100%;
     border: none;
 }
 
-/* modal styles */
+/* Modal Styles */
 .modal {
     position: fixed;
     top: 0;
@@ -465,7 +465,7 @@ body {
 }
 
 .modal-title {
-    font-family: 'press start 2p', cursive;
+    font-family: 'Press Start 2P', cursive;
     font-size: 1rem;
     color: var(--retro-green);
     margin-bottom: 30px;
@@ -489,7 +489,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    font-family: 'vt323', monospace;
+    font-family: 'VT323', monospace;
 }
 
 .modal-option:hover {
@@ -499,7 +499,7 @@ body {
 }
 
 .modal-option .option-icon {
-    font-family: 'press start 2p', cursive;
+    font-family: 'Press Start 2P', cursive;
     font-size: 0.8rem;
     background: var(--retro-cyan);
     color: var(--retro-bg);
@@ -523,7 +523,7 @@ body {
 }
 
 .modal-option .option-name {
-    font-family: 'press start 2p', cursive;
+    font-family: 'Press Start 2P', cursive;
     font-size: 0.7rem;
     margin-top: 5px;
 }
@@ -538,7 +538,7 @@ body {
     border: 2px solid var(--retro-amber);
     color: var(--retro-amber);
     padding: 12px 30px;
-    font-family: 'press start 2p', cursive;
+    font-family: 'Press Start 2P', cursive;
     font-size: 0.6rem;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -549,13 +549,13 @@ body {
     box-shadow: 0 0 15px rgba(255, 176, 0, 0.4);
 }
 
-/* scanlines animation */
+/* Scanlines Animation */
 @keyframes scanlines {
     0% { background-position: 0 0; }
     100% { background-position: 0 4px; }
 }
 
-/* responsive */
+/* Responsive */
 @media (max-width: 768px) {
     .button-grid {
         grid-template-columns: 1fr;
@@ -570,7 +570,7 @@ body {
     }
 }
 
-/* pwa install button */
+/* PWA Install Button */
 .pwa-install-btn {
     position: fixed;
     bottom: 20px;
@@ -608,7 +608,7 @@ body {
     }
 }
 
-/* pwa standalone mode adjustments */
+/* PWA Standalone Mode Adjustments */
 @media (display-mode: standalone) {
     body {
         /* Adjust for standalone app feel */
@@ -621,7 +621,7 @@ body {
     }
 }
 
-/* offline indicator */
+/* Offline Indicator */
 .offline-indicator {
     position: fixed;
     top: 0;

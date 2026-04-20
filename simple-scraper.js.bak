@@ -11,7 +11,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 async function fetchAndSave(url, name) {
-    console.log(`\n Fetching ${name}...`);
+    console.log(`\n🔍 Fetching ${name}...`);
     console.log(`   URL: ${url}`);
     
     try {
@@ -35,8 +35,8 @@ async function fetchAndSave(url, name) {
         const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)/i);
         const description = descMatch ? descMatch[1] : '';
         
-        console.log(`    Title: ${title}`);
-        console.log(`    Size: ${html.length.toLocaleString()} bytes`);
+        console.log(`   ✅ Title: ${title}`);
+        console.log(`   📄 Size: ${html.length.toLocaleString()} bytes`);
         
         // Save to file
         const outputDir = './scraped_data';
@@ -45,7 +45,7 @@ async function fetchAndSave(url, name) {
         const filepath = path.join(outputDir, `${name}.html`);
         await fs.writeFile(filepath, html, 'utf-8');
         
-        console.log(`    Saved to: ${filepath}`);
+        console.log(`   💾 Saved to: ${filepath}`);
         
         // Extract script references
         const scriptMatches = [...html.matchAll(/<script[^>]*src=["']([^"']+)["']/g)];
@@ -54,9 +54,9 @@ async function fetchAndSave(url, name) {
         // Extract link references
         const linkMatches = [...html.matchAll(/<link[^>]*href=["']([^"']+)["']/g)];
         
-        console.log(`    External scripts: ${scriptMatches.length}`);
-        console.log(`    Inline scripts: ${inlineScripts.length}`);
-        console.log(`    Links: ${linkMatches.length}`);
+        console.log(`   📜 External scripts: ${scriptMatches.length}`);
+        console.log(`   📜 Inline scripts: ${inlineScripts.length}`);
+        console.log(`   🔗 Links: ${linkMatches.length}`);
         
         // Return metadata
         return {
@@ -71,13 +71,13 @@ async function fetchAndSave(url, name) {
         };
         
     } catch (error) {
-        console.error(`    Error:`, error.message);
+        console.error(`   ❌ Error:`, error.message);
         return { name, url, error: error.message };
     }
 }
 
 async function main() {
-    console.log(' Simple Nexolauncher Scraper');
+    console.log('🚀 Simple Nexolauncher Scraper');
     console.log('='.repeat(50));
     
     const results = [];
@@ -103,7 +103,7 @@ async function main() {
     );
     
     console.log('\n' + '='.repeat(50));
-    console.log(' COMPLETE');
+    console.log('📊 COMPLETE');
     console.log('='.repeat(50));
     console.log(`\nFiles saved to: ./scraped_data/`);
     console.log('  - main.html');

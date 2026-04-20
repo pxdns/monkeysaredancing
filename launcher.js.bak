@@ -695,7 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     await importPixelclientToDB(content);
                     
-                    pixelclientStatus.textContent = ` Stored in IndexedDB (${(file.size / 1024 / 1024).toFixed(1)} MB)`;
+                    pixelclientStatus.textContent = `✅ Stored in IndexedDB (${(file.size / 1024 / 1024).toFixed(1)} MB)`;
                     pixelclientStatus.style.color = '#00ff41';
                     
                     console.log('[Pixelclient] Imported to IndexedDB:', file.size, 'bytes');

@@ -11,7 +11,7 @@ const URLS = {
 };
 
 async function scrapePage(url, name) {
-    console.log(`\n Scraping ${name}...`);
+    console.log(`\n🔍 Scraping ${name}...`);
     console.log(`   URL: ${url}`);
     
     try {
@@ -89,17 +89,17 @@ async function scrapePage(url, name) {
             rawHtml: html // Full HTML
         };
         
-        console.log(`    Title: ${title}`);
-        console.log(`    HTML size: ${html.length.toLocaleString()} bytes`);
-        console.log(`    Scripts: ${scripts.length}`);
-        console.log(`    Links: ${links.length}`);
-        console.log(`    Styles: ${styles.length}`);
-        console.log(`    EPK: ${eaglerData.hasEPK ? 'Yes' : 'No'}, WASM: ${eaglerData.hasWASM ? 'Yes' : 'No'}`);
+        console.log(`   ✅ Title: ${title}`);
+        console.log(`   📄 HTML size: ${html.length.toLocaleString()} bytes`);
+        console.log(`   📜 Scripts: ${scripts.length}`);
+        console.log(`   🔗 Links: ${links.length}`);
+        console.log(`   🎨 Styles: ${styles.length}`);
+        console.log(`   🎮 EPK: ${eaglerData.hasEPK ? 'Yes' : 'No'}, WASM: ${eaglerData.hasWASM ? 'Yes' : 'No'}`);
         
         return result;
         
     } catch (error) {
-        console.error(`    Error scraping ${name}:`, error.message);
+        console.error(`   ❌ Error scraping ${name}:`, error.message);
         return { url, error: error.message };
     }
 }
@@ -137,12 +137,12 @@ async function saveResults(results) {
             'utf-8'
         );
         
-        console.log(`    Saved to ${outputDir}/${name}_*`);
+        console.log(`   💾 Saved to ${outputDir}/${name}_*`);
     }
 }
 
 async function extractAssets(results) {
-    console.log('\n Extracting asset references...');
+    console.log('\n📦 Extracting asset references...');
     
     const assets = {
         jsFiles: new Set(),
@@ -192,11 +192,11 @@ async function extractAssets(results) {
         'utf-8'
     );
     
-    console.log('    JS files:', assets.jsFiles.size);
-    console.log('     WASM files:', assets.wasmFiles.size);
-    console.log('    EPK files:', assets.epkFiles.size);
-    console.log('     Images:', assets.images.size);
-    console.log('    CSS files:', assets.cssFiles.size);
+    console.log('   📜 JS files:', assets.jsFiles.size);
+    console.log('   ⚙️  WASM files:', assets.wasmFiles.size);
+    console.log('   📦 EPK files:', assets.epkFiles.size);
+    console.log('   🖼️  Images:', assets.images.size);
+    console.log('   🎨 CSS files:', assets.cssFiles.size);
     
     return assetReport;
 }
