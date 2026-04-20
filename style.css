@@ -217,48 +217,60 @@ body {
     letter-spacing: 1.5px;
 }
 
-/* import section */
+/* import section - glassmorphism */
 .import-section {
-    border: 2px dashed rgba(0, 255, 65, 0.3);
-    padding: 25px;
-    margin-bottom: 25px;
+    margin-top: 30px;
+    padding: 30px;
     background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 2;
 }
 
 .import-title {
-    font-family: 'instrument serif', serif;
-    font-size: 0.65rem;
+    font-family: 'vt323', monospace;
+    font-size: 1rem;
     color: var(--retro-cyan);
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     text-align: center;
+    letter-spacing: 4px;
+    text-transform: uppercase;
 }
 
 .import-methods {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
 }
 
 .import-option {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 
 .import-option label {
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: var(--retro-amber);
+    font-family: 'vt323', monospace;
+    letter-spacing: 2px;
 }
 
 .import-option textarea {
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid var(--retro-green);
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
     color: var(--retro-green);
-    padding: 12px;
-    font-family: 'instrument serif', serif;
-    font-size: 0.9rem;
-    min-height: 80px;
+    padding: 15px;
+    font-family: 'vt323', monospace;
+    font-size: 0.95rem;
+    min-height: 100px;
     resize: vertical;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
 }
 
 .import-option textarea::placeholder {
@@ -266,36 +278,39 @@ body {
 }
 
 .import-option input[type="file"] {
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid var(--retro-green);
-    color: var(--retro-green);
-    padding: 10px;
-    font-family: 'instrument serif', serif;
+    display: none;
 }
 
 .import-btn {
-    background: var(--retro-green);
-    color: var(--retro-bg);
-    border: none;
-    padding: 12px 30px;
+    background: linear-gradient(135deg, rgba(0, 255, 65, 0.15) 0%, rgba(0, 255, 65, 0.05) 100%);
+    color: var(--retro-green);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 8px;
+    padding: 12px 25px;
     font-family: 'instrument serif', serif;
-    font-size: 0.65rem;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin-top: 10px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
 }
 
 .import-btn:hover {
-    background: var(--retro-cyan);
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+    background: linear-gradient(135deg, rgba(0, 255, 65, 0.25) 0%, rgba(0, 255, 65, 0.1) 100%);
+    border-color: rgba(0, 255, 65, 0.6);
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+    transform: translateY(-2px);
 }
 
-#importstatus {
-    text-align: center;
-    font-size: 1rem;
-    margin-top: 10px;
+#importStatus, #htmlImportStatus {
+    font-family: 'vt323', monospace;
+    font-size: 0.9rem;
+    margin-top: 8px;
     min-height: 20px;
+    letter-spacing: 1px;
 }
+
 
 /* texture pack import button - distinct amber color */
 .texture-btn {

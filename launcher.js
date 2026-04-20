@@ -139,8 +139,25 @@ async function launchClient(type) {
     }
 }
 
-// Launch AstraClient (1.12 or 1.8) - no auth required
-function launchAstraClient(version) {
+// Launch AstraClient (1.12 or 1.8) - auth required
+async function launchAstraClient(version) {
+    // Check if already authenticated
+    const auth = JSON.parse(localStorage.getItem('pixel_auth') || '{}');
+    const authorizedEmails = ['e42xec@gmail.com', 'xpknown@gmail.com'];
+    
+    if (!auth.email || !authorizedEmails.includes(auth.email)) {
+        // Show auth section
+        showAuthSection();
+        astraPending = version;
+        return;
+    }
+    
+    // Proceed with launch
+    doLaunchAstraClient(version);
+}
+
+// Internal launch function for AstraClient
+function doLaunchAstraClient(version) {
     // Import any pending settings first
     const pendingImport = sessionStorage.getItem('pending_localstorage_import');
     if (pendingImport) {
@@ -156,8 +173,9 @@ function launchAstraClient(version) {
     }
 }
 
-// Global flag to track if xpclient launch is pending
+// Global flags to track pending launches
 let xpclientPending = false;
+let astraPending = null; // '112' or '18'
 
 // Handle Google auth response - decrypts XPClient on successful auth
 async function handleCredentialResponse(response) {
@@ -201,6 +219,13 @@ async function handleCredentialResponse(response) {
         if (xpclientPending) {
             xpclientPending = false;
             doLaunchXPClient();
+        }
+        
+        // If astra was pending, launch it now
+        if (astraPending) {
+            const version = astraPending;
+            astraPending = null;
+            doLaunchAstraClient(version);
         }
         
     } catch (error) {
@@ -738,11 +763,118 @@ async function autoLoadTexturePacks() {
     }
 }
 
-// No DOM event listeners needed - just clients
+// Import handlers
 document.addEventListener('DOMContentLoaded', () => {
-    // clients only - no import/export ui
     console.log('[pixelstandalone] launcher ready');
+    
+    // Setup import handlers
+    const importLocalstorageBtn = document.getElementById('importLocalstorageBtn');
+    const htmlFileInput = document.getElementById('htmlFileInput');
+    
+    if (importLocalstorageBtn) {
+        importLocalstorageBtn.addEventListener('click', () => {
+            const input = document.getElementById('localstorageInput');
+            const status = document.getElementById('importStatus');
+            const data = input.value.trim();
+            
+            if (!data) {
+                status.textContent = 'please enter localstorage data';
+                status.style.color = 'var(--retro-amber)';
+                return;
+            }
+            
+            try {
+                importLocalStorage(data);
+                status.textContent = 'localstorage imported successfully';
+                status.style.color = 'var(--retro-green)';
+                input.value = '';
+            } catch (error) {
+                status.textContent = 'import failed: ' + error.message;
+                status.style.color = '#ff4444';
+            }
+        });
+    }
+    
+    if (htmlFileInput) {
+        htmlFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            const status = document.getElementById('htmlImportStatus');
+            
+            if (!file) return;
+            
+            status.textContent = 'processing...';
+            status.style.color = 'var(--retro-cyan)';
+            
+            try {
+                const text = await file.text();
+                await processHTMLImport(text, file.name);
+                status.textContent = `imported: ${file.name}`;
+                status.style.color = 'var(--retro-green)';
+            } catch (error) {
+                status.textContent = 'import failed: ' + error.message;
+                status.style.color = '#ff4444';
+            }
+            
+            e.target.value = '';
+        });
+    }
     
     // auto-load packs from ./packs folder
     autoLoadTexturePacks();
 });
+
+// Process HTML file import
+async function processHTMLImport(htmlContent, filename) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    
+    // Extract localStorage data
+    const scripts = doc.querySelectorAll('script');
+    let localStorageData = null;
+    
+    for (const script of scripts) {
+        const text = script.textContent;
+        
+        // Look for localStorage setItem calls
+        const setItemMatches = [...text.matchAll(/localStorage\.setItem\(['"]([^'"]+)['"],\s*['"]([^'"]*)['"]\)/g)];
+        const escapedMatches = [...text.matchAll(/localStorage\.setItem\(['"]([^'"]+)['"],\s*['"](.*?)['"]\)/g)];
+        
+        if (setItemMatches.length > 0 || escapedMatches.length > 0) {
+            localStorageData = {};
+            setItemMatches.forEach(match => {
+                localStorageData[match[1]] = match[2];
+            });
+            escapedMatches.forEach(match => {
+                try {
+                    localStorageData[match[1]] = JSON.parse('"' + match[2] + '"');
+                } catch (e) {
+                    localStorageData[match[1]] = match[2];
+                }
+            });
+        }
+        
+        // Look for OptiFine-style cape data
+        const capeMatch = text.match(/ofCape/);
+        if (capeMatch) {
+            console.log('[import] found OptiFine cape data in', filename);
+        }
+    }
+    
+    // Check for texture packs in the HTML
+    const epkMatches = [...htmlContent.matchAll(/data:application\/octet-stream;base64,([A-Za-z0-9+/=]+)/g)];
+    if (epkMatches.length > 0) {
+        console.log(`[import] found ${epkMatches.length} embedded texture packs`);
+    }
+    
+    // Store localStorage data for later import
+    if (localStorageData && Object.keys(localStorageData).length > 0) {
+        sessionStorage.setItem('pending_localstorage_import', JSON.stringify(localStorageData));
+        console.log('[import] stored localStorage data for client launch');
+    }
+    
+    return {
+        filename,
+        localStorageImported: localStorageData ? Object.keys(localStorageData).length : 0,
+        texturePacksFound: epkMatches.length
+    };
+}
