@@ -1,0 +1,14 @@
+{
+  "name": "pixelstandalone-scraper",
+  "version": "1.0.0",
+  "description": "Scraper for nexolauncher.vercel.app",
+  "type": "module",
+  "scripts": {
+    "scrape": "node scraper.js",
+    "simple": "node simple-scraper.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "cheerio": "^1.0.0-rc.12"
+  }
+}
