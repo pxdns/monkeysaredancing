@@ -135,7 +135,7 @@ async function launchClient(type) {
         document.body.appendChild(script);
     } else if (type === 'wasm') {
         // Load WASM client from local files
-        window.location.href = 'WASM/index.html';
+        window.location.href = 'nexoclient/WASM/online/index.html';
     }
 }
 
@@ -281,7 +281,7 @@ async function launchNexoClient(mode) {
         window.location.href = 'nexoclient/JS/Offline/index.html';
     } else if (mode === 'wasm') {
         // Use root WASM folder which has all required assets
-        window.location.href = 'WASM/index.html';
+        window.location.href = 'nexoclient/wasm/online/index.html';
     }
 }
 
