@@ -1,0 +1,12 @@
+{
+  "packs": [
+    {
+      "name": "default",
+      "file": "default.epk",
+      "metadata": {
+        "description": "Default texture pack",
+        "version": "1.0"
+      }
+    }
+  ]
+}

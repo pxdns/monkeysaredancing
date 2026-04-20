@@ -475,6 +475,10 @@ async function importPixelclientToDB(fileContent) {
         console.log('[Pixelclient] Imported to IndexedDB successfully');
         return true;
     } catch (error) {
+        console.error('[Pixelclient] Import error:', error);
+        return false;
+    }
+}
 
 const PIXELCLIENT_DB_NAME = 'PixelStandalone';
 const PIXELCLIENT_STORE_NAME = 'clientData';
@@ -572,8 +576,77 @@ function openTexturePackDB() {
     });
 }
 
+// Auto-load texture packs from ./packs folder
+async function autoLoadTexturePacks() {
+    try {
+        // Try to fetch packs manifest
+        const response = await fetch('packs/packs.json');
+        if (!response.ok) {
+            console.log('[packs] no packs.json manifest found');
+            return;
+        }
+        
+        const manifest = await response.json();
+        if (!manifest.packs || !Array.isArray(manifest.packs)) {
+            console.log('[packs] invalid manifest format');
+            return;
+        }
+        
+        let loaded = 0;
+        const db = await openTexturePackDB();
+        
+        for (const packInfo of manifest.packs) {
+            try {
+                // Fetch pack data
+                const packResponse = await fetch(`packs/${packInfo.file}`);
+                if (!packResponse.ok) continue;
+                
+                let packData;
+                if (packInfo.file.endsWith('.json')) {
+                    packData = await packResponse.json();
+                } else if (packInfo.file.endsWith('.epk')) {
+                    // EPK files need base64 encoding
+                    const arrayBuffer = await packResponse.arrayBuffer();
+                    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+                    packData = {
+                        name: packInfo.name || packInfo.file.replace('.epk', ''),
+                        data: base64,
+                        metadata: packInfo.metadata || {}
+                    };
+                }
+                
+                if (packData) {
+                    // Store in IndexedDB
+                    const transaction = db.transaction([TEXTURE_PACK_STORE_NAME], 'readwrite');
+                    const store = transaction.objectStore(TEXTURE_PACK_STORE_NAME);
+                    
+                    await new Promise((resolve, reject) => {
+                        const request = store.put(packData);
+                        request.onsuccess = () => {
+                            loaded++;
+                            resolve();
+                        };
+                        request.onerror = () => reject(request.error);
+                    });
+                }
+            } catch (err) {
+                console.error(`[packs] failed to load ${packInfo.file}:`, err);
+            }
+        }
+        
+        db.close();
+        console.log(`[packs] auto-loaded ${loaded} texture packs`);
+        
+    } catch (error) {
+        console.log('[packs] auto-load skipped:', error.message);
+    }
+}
+
 // No DOM event listeners needed - just clients
 document.addEventListener('DOMContentLoaded', () => {
     // clients only - no import/export ui
     console.log('[pixelstandalone] launcher ready');
+    
+    // auto-load packs from ./packs folder
+    autoLoadTexturePacks();
 });
