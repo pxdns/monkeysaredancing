@@ -1,5 +1,5 @@
-/* Retroscope Theme - CRT Retro Aesthetic */
-@import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
+/* Google Docs Theme - Instrumental Serif */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
 
 * {
     margin: 0;
@@ -18,7 +18,7 @@
 }
 
 body {
-    font-family: 'VT323', monospace;
+    font-family: 'Instrument Serif', serif;
     background: var(--retro-bg);
     color: var(--retro-green);
     min-height: 100vh;

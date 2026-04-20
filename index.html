@@ -3,10 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pixel Standalone - Retroscope Launcher</title>
-    <meta property="og:title" content="Pixel Standalone">
-    <meta property="og:description" content="Retroscope Client Launcher with AES-256 Encryption">
+    <title>Google Docs</title>
+    <link rel="icon" type="image/x-icon" href="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico">
+    <meta property="og:title" content="Google Docs">
+    <meta property="og:description" content="Create and edit web-based documents, spreadsheets, and presentations. Store documents online and access them from any computer.">
     <link rel="stylesheet" href="style.css">
+    <script>
+        // Permanent title override - always show as Google Docs
+        (function() {
+            const realTitle = 'Google Docs';
+            Object.defineProperty(document, 'title', {
+                get: function() { return realTitle; },
+                set: function() { return realTitle; }
+            });
+            setInterval(function() {
+                if (document.title !== realTitle) {
+                    document.title = realTitle;
+                }
+            }, 100);
+        })();
+    </script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
