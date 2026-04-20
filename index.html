@@ -29,6 +29,8 @@
         })();
     </script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="auth.js" defer></script>
+    <script src="launcher.js" defer></script>
 </head>
 <body>
     <div id="authScreen" class="screen">
@@ -110,9 +112,6 @@
     <button id="pwaInstallBtn" class="pwa-install-btn" onclick="installPWA()" style="display: none;">
         install app
     </button>
-    
-    <script src="auth.js"></script>
-    <script src="launcher.js"></script>
     
     <!-- PWA Service Worker Registration -->
     <script>
