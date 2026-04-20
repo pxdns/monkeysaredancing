@@ -219,11 +219,54 @@ function loadWASMLauncher() {
 
 // Load protected pixelclient
 async function loadProtectedPixelClient() {
+    const container = document.getElementById('clientContainer');
+    
     try {
-        const response = await fetch('./assets/pixelclient.html');
-        if (!response.ok) throw new Error('Failed to load');
-
-        let content = await response.text();
+        let content = null;
+        let source = '';
+        
+        // 1. Try to get from IndexedDB first
+        content = await getPixelclientFromDB();
+        if (content) {
+            source = 'indexeddb';
+            console.log('[Pixelclient] Loaded from IndexedDB');
+        }
+        
+        // 2. If not in DB, try to fetch from file (migration path)
+        if (!content) {
+            try {
+                const response = await fetch('./assets/pixelclient.html');
+                if (response.ok) {
+                    content = await response.text();
+                    source = 'file';
+                    console.log('[Pixelclient] Loaded from file, migrating to IndexedDB...');
+                    
+                    // Store in IndexedDB for future use (fire and forget)
+                    storePixelclientInDB(content).then(() => {
+                        console.log('[Pixelclient] Migrated to IndexedDB successfully');
+                    }).catch(err => {
+                        console.warn('[Pixelclient] Migration failed:', err);
+                    });
+                }
+            } catch (fetchError) {
+                console.log('[Pixelclient] File not found, using IndexedDB only');
+            }
+        }
+        
+        // 3. If still no content, show error
+        if (!content) {
+            container.innerHTML = `
+                <div style="color:#ff5555;text-align:center;padding:20px;">
+                    <h2>Client Not Found</h2>
+                    <p>Pixelclient is not stored in IndexedDB and the file is not available.</p>
+                    <p>Please load the client file once to cache it, or import it via the settings panel.</p>
+                    <button onclick="showPixelclientImport()" style="margin-top:20px;padding:10px 20px;background:#00ff41;color:#000;border:none;cursor:pointer;">
+                        Import Pixelclient
+                    </button>
+                </div>
+            `;
+            return;
+        }
 
         // Add protection scripts
         const protectionScript = `
@@ -243,12 +286,25 @@ async function loadProtectedPixelClient() {
 <\/script>`;
 
         content = content.replace('</head>', protectionScript + '</head>');
-
-        const container = document.getElementById('clientContainer');
         container.innerHTML = content;
+        
+        console.log(`[Pixelclient] Loaded successfully from ${source}`);
+        
     } catch (error) {
-        console.error('Error loading pixelclient:', error);
-        document.getElementById('clientContainer').innerHTML = '<h1 style="color:#ff0000;text-align:center;">Error loading client</h1>';
+        console.error('[Pixelclient] Error loading:', error);
+        container.innerHTML = '<h1 style="color:#ff0000;text-align:center;">Error loading client</h1>';
+    }
+}
+
+// Import pixelclient HTML from file/textarea into IndexedDB
+async function importPixelclientToDB(fileContent) {
+    try {
+        await storePixelclientInDB(fileContent);
+        console.log('[Pixelclient] Imported to IndexedDB successfully');
+        return true;
+    } catch (error) {
+        console.error('[Pixelclient] Import failed:', error);
+        throw error;
     }
 }
 
@@ -296,6 +352,90 @@ function processImport(jsonData, status) {
         status.textContent = 'Invalid JSON format. Please check your input.';
         status.style.color = '#ff5555';
     }
+}
+
+// ==================== PIXELCLIENT INDEXEDDB STORAGE ====================
+// Pixelclient HTML is stored in IndexedDB so the file doesn't need to exist
+
+const PIXELCLIENT_DB_NAME = 'PixelStandalone';
+const PIXELCLIENT_STORE_NAME = 'clientData';
+const PIXELCLIENT_DB_VERSION = 1;
+const PIXELCLIENT_KEY = 'pixelclient_html';
+
+// Open Pixelclient IndexedDB
+function openPixelclientDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(PIXELCLIENT_DB_NAME, PIXELCLIENT_DB_VERSION);
+        
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(PIXELCLIENT_STORE_NAME)) {
+                db.createObjectStore(PIXELCLIENT_STORE_NAME);
+            }
+        };
+    });
+}
+
+// Store pixelclient HTML in IndexedDB
+async function storePixelclientInDB(htmlContent) {
+    try {
+        const db = await openPixelclientDB();
+        
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([PIXELCLIENT_STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(PIXELCLIENT_STORE_NAME);
+            
+            const record = {
+                data: htmlContent,
+                storedAt: new Date().toISOString(),
+                size: htmlContent.length
+            };
+            
+            const request = store.put(record, PIXELCLIENT_KEY);
+            
+            request.onsuccess = () => resolve(true);
+            request.onerror = () => reject(request.error);
+            transaction.oncomplete = () => db.close();
+        });
+    } catch (error) {
+        console.error('[Pixelclient] Store failed:', error);
+        throw error;
+    }
+}
+
+// Get pixelclient HTML from IndexedDB
+async function getPixelclientFromDB() {
+    try {
+        const db = await openPixelclientDB();
+        
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([PIXELCLIENT_STORE_NAME], 'readonly');
+            const store = transaction.objectStore(PIXELCLIENT_STORE_NAME);
+            const request = store.get(PIXELCLIENT_KEY);
+            
+            request.onsuccess = () => {
+                const result = request.result;
+                db.close();
+                resolve(result ? result.data : null);
+            };
+            request.onerror = () => {
+                db.close();
+                reject(request.error);
+            };
+        });
+    } catch (error) {
+        console.error('[Pixelclient] Get failed:', error);
+        return null;
+    }
+}
+
+// Check if pixelclient is stored in IndexedDB
+async function isPixelclientInDB() {
+    const data = await getPixelclientFromDB();
+    return data !== null;
 }
 
 // ==================== TEXTURE PACK IMPORT ====================
@@ -520,6 +660,56 @@ document.addEventListener('DOMContentLoaded', () => {
                 exportStatus.textContent = 'Export failed. Make sure you have texture packs saved.';
                 exportStatus.style.color = '#ff5555';
             }
+        });
+    }
+    
+    // Pixelclient HTML import to IndexedDB
+    const pixelclientBtn = document.getElementById('importPixelclientBtn');
+    const pixelclientFile = document.getElementById('pixelclientFile');
+    const pixelclientStatus = document.getElementById('pixelclientImportStatus');
+    
+    if (pixelclientBtn) {
+        pixelclientBtn.addEventListener('click', () => {
+            if (!pixelclientFile.files.length) {
+                pixelclientStatus.textContent = 'Please select pixelclient.html file';
+                pixelclientStatus.style.color = '#ff5555';
+                return;
+            }
+            
+            const file = pixelclientFile.files[0];
+            
+            if (file.size < 1000000) { // Less than 1MB is suspicious
+                pixelclientStatus.textContent = 'File too small, may not be valid pixelclient.html';
+                pixelclientStatus.style.color = '#ff5555';
+                return;
+            }
+            
+            pixelclientStatus.textContent = 'Reading file...';
+            pixelclientStatus.style.color = '#00ffff';
+            
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const content = e.target.result;
+                    pixelclientStatus.textContent = 'Storing in IndexedDB...';
+                    
+                    await importPixelclientToDB(content);
+                    
+                    pixelclientStatus.textContent = `✅ Stored in IndexedDB (${(file.size / 1024 / 1024).toFixed(1)} MB)`;
+                    pixelclientStatus.style.color = '#00ff41';
+                    
+                    console.log('[Pixelclient] Imported to IndexedDB:', file.size, 'bytes');
+                } catch (err) {
+                    console.error('[Pixelclient] Import error:', err);
+                    pixelclientStatus.textContent = 'Import failed: ' + err.message;
+                    pixelclientStatus.style.color = '#ff5555';
+                }
+            };
+            reader.onerror = () => {
+                pixelclientStatus.textContent = 'Error reading file';
+                pixelclientStatus.style.color = '#ff5555';
+            };
+            reader.readAsText(file);
         });
     }
 });

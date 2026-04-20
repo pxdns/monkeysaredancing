@@ -313,6 +313,24 @@ body {
     min-height: 20px;
 }
 
+/* Pixelclient Import Button - Pink color */
+.pixelclient-btn {
+    background: var(--retro-pink);
+    color: var(--retro-bg);
+}
+
+.pixelclient-btn:hover {
+    background: #ff44ff;
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.6);
+}
+
+#pixelclientImportStatus {
+    text-align: center;
+    font-size: 1rem;
+    margin-top: 10px;
+    min-height: 20px;
+}
+
 /* Auth Section */
 .auth-section {
     text-align: center;
