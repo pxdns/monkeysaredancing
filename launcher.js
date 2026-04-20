@@ -184,8 +184,8 @@ async function launchNexoClient(mode) {
         // Redirect to copied JS client
         window.location.href = 'nexoclient/JS/Offline/index.html';
     } else if (mode === 'wasm') {
-        // Redirect to copied WASM client
-        window.location.href = 'nexoclient/WASM-GC/Online/index.html';
+        // Use root WASM folder which has all required assets
+        window.location.href = 'WASM/index.html';
     }
 }
 
