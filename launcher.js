@@ -1,6 +1,88 @@
 // Pixel Standalone Launcher Module
 // Handles client launching with AES-256 encryption and localStorage import
 
+// ==================== ENCRYPTED XPCLIENT DATA ====================
+// XPClient content encrypted with Google Auth token
+// Only decrypts when user signs in with authorized Google account
+const ENCRYPTED_XPCLIENT_BASE64 = 'PLACEHOLDER_INSERT_ENCRYPTED_BASE64_HERE';
+
+// Decrypt XPClient using Google auth token as key
+async function decryptXPClientWithAuth(googleToken) {
+    try {
+        // Use token to derive decryption key
+        const encoder = new TextEncoder();
+        const tokenData = encoder.encode(googleToken);
+        
+        // Hash token to create 256-bit key
+        const hashBuffer = await crypto.subtle.digest('SHA-256', tokenData);
+        const key = await crypto.subtle.importKey(
+            'raw',
+            hashBuffer,
+            { name: 'AES-GCM' },
+            false,
+            ['decrypt']
+        );
+        
+        // Decode base64 encrypted data
+        const encryptedData = Uint8Array.from(atob(ENCRYPTED_XPCLIENT_BASE64), c => c.charCodeAt(0));
+        
+        // Extract IV (first 12 bytes) and ciphertext
+        const iv = encryptedData.slice(0, 12);
+        const ciphertext = encryptedData.slice(12);
+        
+        // Decrypt
+        const decrypted = await crypto.subtle.decrypt(
+            { name: 'AES-GCM', iv: iv },
+            key,
+            ciphertext
+        );
+        
+        const decoder = new TextDecoder();
+        return decoder.decode(decrypted);
+    } catch (error) {
+        console.error('[xpclient] decryption failed:', error);
+        throw new Error('failed to decrypt xpclient - invalid auth or corrupted data');
+    }
+}
+
+// Encrypt XPClient (for admin use - encrypts and outputs base64)
+async function encryptXPClientForStorage(htmlContent, googleToken) {
+    try {
+        const encoder = new TextEncoder();
+        const tokenData = encoder.encode(googleToken);
+        
+        // Hash token to create key
+        const hashBuffer = await crypto.subtle.digest('SHA-256', tokenData);
+        const key = await crypto.subtle.importKey(
+            'raw',
+            hashBuffer,
+            { name: 'AES-GCM' },
+            false,
+            ['encrypt']
+        );
+        
+        // Generate random IV
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        
+        // Encrypt
+        const encrypted = await crypto.subtle.encrypt(
+            { name: 'AES-GCM', iv: iv },
+            key,
+            encoder.encode(htmlContent)
+        );
+        
+        // Combine IV + ciphertext and base64 encode
+        const combined = new Uint8Array(iv.length + encrypted.byteLength);
+        combined.set(iv);
+        combined.set(new Uint8Array(encrypted), iv.length);
+        
+        return btoa(String.fromCharCode(...combined));
+    } catch (error) {
+        console.error('[xpclient] encryption failed:', error);
+        throw error;
+    }
+}
+
 // Check auth before launching
 async function requireAuth() {
     const isAuth = await AuthManager.init();
@@ -77,8 +159,8 @@ function launchAstraClient(version) {
 // Global flag to track if xpclient launch is pending
 let xpclientPending = false;
 
-// Handle Google auth response
-function handleCredentialResponse(response) {
+// Handle Google auth response - decrypts XPClient on successful auth
+async function handleCredentialResponse(response) {
     try {
         const jwt = response.credential;
         const payload = JSON.parse(atob(jwt.split('.')[1]));
@@ -97,6 +179,20 @@ function handleCredentialResponse(response) {
             token: jwt,
             timestamp: Date.now()
         }));
+        
+        // Decrypt XPClient with auth token and store in IndexedDB
+        if (ENCRYPTED_XPCLIENT_BASE64 && ENCRYPTED_XPCLIENT_BASE64 !== 'PLACEHOLDER_INSERT_ENCRYPTED_BASE64_HERE') {
+            try {
+                console.log('[xpclient] decrypting with google auth...');
+                const decryptedHTML = await decryptXPClientWithAuth(jwt);
+                await storePixelclientInDB(decryptedHTML);
+                console.log('[xpclient] decrypted and stored successfully');
+            } catch (decryptError) {
+                console.error('[xpclient] failed to decrypt:', decryptError);
+                alert('failed to decrypt xpclient - please contact admin');
+                return;
+            }
+        }
         
         // Hide auth section
         hideAuthSection();
