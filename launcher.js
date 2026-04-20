@@ -293,6 +293,112 @@ async function exportPixelclientFromDB() {
     return content;
 }
 
+// ==================== ENCRYPTION/DECRYPTION ====================
+// Encrypt data with password using AES-GCM
+async function encryptData(data, password) {
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+    
+    // Derive key from password
+    const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        encoder.encode(password),
+        { name: 'PBKDF2' },
+        false,
+        ['deriveBits', 'deriveKey']
+    );
+    
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    
+    const key = await crypto.subtle.deriveKey(
+        {
+            name: 'PBKDF2',
+            salt: salt,
+            iterations: 100000,
+            hash: 'SHA-256'
+        },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt']
+    );
+    
+    // Encrypt
+    const encrypted = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv: iv },
+        key,
+        encoder.encode(data)
+    );
+    
+    // Combine salt + iv + encrypted data
+    const result = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+    result.set(salt, 0);
+    result.set(iv, salt.length);
+    result.set(new Uint8Array(encrypted), salt.length + iv.length);
+    
+    // Return base64 encoded
+    return btoa(String.fromCharCode(...result));
+}
+
+// Decrypt data with password
+async function decryptData(encryptedBase64, password) {
+    const encoder = new TextEncoder();
+    
+    // Decode base64
+    const encryptedData = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+    
+    // Extract salt, iv, and encrypted content
+    const salt = encryptedData.slice(0, 16);
+    const iv = encryptedData.slice(16, 28);
+    const encrypted = encryptedData.slice(28);
+    
+    // Derive key from password
+    const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        encoder.encode(password),
+        { name: 'PBKDF2' },
+        false,
+        ['deriveBits', 'deriveKey']
+    );
+    
+    const key = await crypto.subtle.deriveKey(
+        {
+            name: 'PBKDF2',
+            salt: salt,
+            iterations: 100000,
+            hash: 'SHA-256'
+        },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['decrypt']
+    );
+    
+    // Decrypt
+    const decrypted = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: iv },
+        key,
+        encrypted
+    );
+    
+    return new TextDecoder().decode(decrypted);
+}
+
+// Generate random encryption key for website-only decryption
+function generateWebsiteKey() {
+    // Key derived from domain + user agent + screen size
+    // Makes it very hard to decrypt on another site
+    const data = location.origin + navigator.userAgent + screen.width + 'x' + screen.height;
+    let hash = 0;
+    for (let i = 0; i < data.length; i++) {
+        const char = data.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return 'pxdns_' + Math.abs(hash).toString(36) + '_onced';
+}
+
 // Load protected pixelclient - indexeddb only (no file fallback)
 async function loadProtectedPixelClient() {
     const container = document.getElementById('clientContainer');
@@ -712,23 +818,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Pixelclient HTML import to IndexedDB
+    // Pixelclient HTML import to IndexedDB with decryption support
     const pixelclientBtn = document.getElementById('importPixelclientBtn');
     const pixelclientFile = document.getElementById('pixelclientFile');
     const pixelclientStatus = document.getElementById('pixelclientImportStatus');
+    const pixelclientPasswordInput = document.getElementById('pixelclientPassword');
     
     if (pixelclientBtn) {
         pixelclientBtn.addEventListener('click', () => {
             if (!pixelclientFile.files.length) {
-                pixelclientStatus.textContent = 'please select pixelclient.html or dih.html file';
+                pixelclientStatus.textContent = 'please select pixelclient.html, dih.html, or .pxd file';
                 pixelclientStatus.style.color = '#ff5555';
                 return;
             }
             
             const file = pixelclientFile.files[0];
+            const isEncrypted = file.name.endsWith('.pxd');
+            const password = pixelclientPasswordInput.value.trim();
             
-            if (file.size < 1000000) { // less than 1mb is suspicious
-                pixelclientStatus.textContent = 'file too small, may not be valid pixelclient.html';
+            if (file.size < 1000000 && !isEncrypted) { // less than 1mb is suspicious for html
+                pixelclientStatus.textContent = 'file too small, may not be valid';
                 pixelclientStatus.style.color = '#ff5555';
                 return;
             }
@@ -739,18 +848,39 @@ document.addEventListener('DOMContentLoaded', () => {
             const reader = new FileReader();
             reader.onload = async (e) => {
                 try {
-                    const content = e.target.result;
+                    let content = e.target.result;
+                    
+                    // Check if encrypted .pxd file
+                    if (isEncrypted) {
+                        if (!password) {
+                            pixelclientStatus.textContent = 'password required for .pxd files';
+                            pixelclientStatus.style.color = '#ff5555';
+                            return;
+                        }
+                        
+                        pixelclientStatus.textContent = 'decrypting...';
+                        const wrapper = JSON.parse(content);
+                        
+                        if (!wrapper.encrypted || !wrapper.data) {
+                            throw new Error('invalid .pxd file format');
+                        }
+                        
+                        content = await decryptData(wrapper.data, password);
+                    }
+                    
                     pixelclientStatus.textContent = 'storing in indexeddb...';
                     
                     await importPixelclientToDB(content);
                     
-                    pixelclientStatus.textContent = `stored in indexeddb (${(file.size / 1024 / 1024).toFixed(1)} mb)`;
+                    pixelclientStatus.textContent = isEncrypted 
+                        ? `decrypted and stored (${(file.size / 1024 / 1024).toFixed(1)} mb)` 
+                        : `stored in indexeddb (${(file.size / 1024 / 1024).toFixed(1)} mb)`;
                     pixelclientStatus.style.color = '#00ff41';
                     
                     console.log('[pixelclient] imported to indexeddb:', file.size, 'bytes');
                 } catch (err) {
                     console.error('[pixelclient] import error:', err);
-                    pixelclientStatus.textContent = 'import failed: ' + err.message;
+                    pixelclientStatus.textContent = 'import failed: ' + (err.message || 'wrong password?');
                     pixelclientStatus.style.color = '#ff5555';
                 }
             };
@@ -762,9 +892,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Export pixelclient button
+    // Export pixelclient button with optional encryption
     const exportPixelclientBtn = document.getElementById('exportPixelclientBtn');
     const pixelclientExportStatus = document.getElementById('pixelclientExportStatus');
+    const exportPasswordInput = document.getElementById('exportPassword');
     
     if (exportPixelclientBtn) {
         exportPixelclientBtn.addEventListener('click', async () => {
@@ -773,19 +904,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 pixelclientExportStatus.style.color = '#00ffff';
                 
                 const content = await exportPixelclientFromDB();
+                const password = exportPasswordInput.value.trim();
+                
+                let outputContent = content;
+                let filename = 'pixelclient-export.html';
+                let mimeType = 'text/html';
+                
+                // Encrypt if password provided
+                if (password) {
+                    pixelclientExportStatus.textContent = 'encrypting...';
+                    const encrypted = await encryptData(content, password);
+                    // Create wrapped format with metadata
+                    outputContent = JSON.stringify({
+                        version: 1,
+                        encrypted: true,
+                        data: encrypted,
+                        timestamp: Date.now()
+                    });
+                    filename = 'pixelclient.pxd';
+                    mimeType = 'application/json';
+                }
                 
                 // Create downloadable file
-                const blob = new Blob([content], { type: 'text/html' });
+                const blob = new Blob([outputContent], { type: mimeType });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'pixelclient-export.html';
+                a.download = filename;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 
-                pixelclientExportStatus.textContent = 'exported successfully';
+                pixelclientExportStatus.textContent = password ? 'exported and encrypted as .pxd' : 'exported as .html';
                 pixelclientExportStatus.style.color = '#00ff41';
                 
             } catch (error) {

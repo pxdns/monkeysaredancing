@@ -107,9 +107,13 @@
                 <h3 class="import-title">[ import pixelclient to storage ]</h3>
                 <div class="import-methods">
                     <div class="import-option">
-                        <label>upload pixelclient.html or dih.html to indexeddb</label>
-                        <p class="export-desc">store the pixelclient html in indexeddb so the file doesn't need to exist. ~25mb file. works on any device after import.</p>
-                        <input type="file" id="pixelclientFile" accept=".html">
+                        <label>upload pixelclient.html, dih.html, or encrypted .pxd file</label>
+                        <p class="export-desc">store the pixelclient in indexeddb so the file doesn't need to exist. supports encrypted files. works on any device after import.</p>
+                        <input type="file" id="pixelclientFile" accept=".html,.pxd">
+                    </div>
+                    <div class="import-option">
+                        <label>password (if encrypted file, leave blank for unencrypted)</label>
+                        <input type="password" id="pixelclientPassword" placeholder="enter password for encrypted files" style="background:rgba(0,0,0,0.5);border:1px solid var(--retro-green);color:var(--retro-green);padding:10px;font-family:'instrument serif',serif;width:100%;">
                     </div>
                     <button id="importPixelclientBtn" class="import-btn pixelclient-btn">import pixelclient</button>
                     <p id="pixelclientImportStatus"></p>
@@ -120,8 +124,9 @@
                 <h3 class="import-title">[ export pixelclient from storage ]</h3>
                 <div class="import-methods">
                     <div class="import-option">
-                        <label>download pixelclient.html from indexeddb</label>
-                        <p class="export-desc">export the stored pixelclient to transfer to another device or backup. download as html file.</p>
+                        <label>export password (leave blank for unencrypted export)</label>
+                        <input type="password" id="exportPassword" placeholder="enter password to encrypt file" style="background:rgba(0,0,0,0.5);border:1px solid var(--retro-cyan);color:var(--retro-cyan);padding:10px;font-family:'instrument serif',serif;width:100%;">
+                        <p class="export-desc" style="margin-top:10px;">exports as .pxd (encrypted) or .html (unencrypted). encrypted files only decryptable with the password.</p>
                     </div>
                     <button id="exportPixelclientBtn" class="import-btn export-btn">export pixelclient</button>
                     <p id="pixelclientExportStatus"></p>
