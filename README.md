@@ -1,6 +1,6 @@
-# Pixel Standalone - Retroscope Edition
+# stansalone
 
-A standalone retro-themed client launcher with AES-256 encryption and Google OAuth authentication.
+ AES-256 encryption and Google OAuth authentication. dont try
 
 ## Features
 
@@ -8,7 +8,6 @@ A standalone retro-themed client launcher with AES-256 encryption and Google OAu
 - **Four Client Options**:
   - Tuff Client JS
   - Tuffclient WASM
-  - XPClient (protected Pixel Client)
   - WASM Launcher (JS + WASM modes)
 - **AES-256 Encryption**: Military-grade security using Web Crypto API
 - **Google OAuth Sign-In**: Required for accessing protected clients
@@ -30,8 +29,6 @@ pixelstandalone/
 │   ├── assets.epk
 │   ├── classes.js
 │   └── ...
-└── assets/             # Protected client files
-    └── pixelclient.html
 ```
 
 ## Authorized Users
@@ -41,12 +38,11 @@ pixelstandalone/
 
 ## Usage
 
-1. Open `index.html` in a web browser
+1. Open `https://monkeysaredancing.github.io` in a web browser
 2. Sign in with Google (must be authorized)
 3. Select your preferred client:
    - **Tuff Client JS**: Standard JavaScript client
    - **Tuffclient WASM**: WebAssembly client
-   - **XPClient**: Protected Pixel Client with anti-tamper
    - **WASM Launcher**: Choose between JS or WASM mode
 4. (Optional) Import your Minecraft settings via JSON paste or file upload
 
@@ -65,6 +61,4 @@ pixelstandalone/
 - For WASM mode: Chrome with JSPI enabled (chrome://flags)
 
 ## Credits
-
-Based on Texture Studio and Pixel Client codebases.
-# onced
+# once'd
