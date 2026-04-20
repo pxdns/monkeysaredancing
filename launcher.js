@@ -46,7 +46,7 @@ async function launchClient(type) {
 
     if (type === 'js') {
         // Load Tuff Client JS directly
-        const files = ['J','S','/','e','a','g','l','e','r','c','r','a','f','t','.','j','s'];
+        const files = ['J','S','/','c','l','a','s','s','e','s','.','j','s'];
         const script = document.createElement('script');
         script.src = files.join('');
         document.body.innerHTML = '';
