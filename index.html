@@ -116,11 +116,12 @@
                 </div>
             </div>
             
-            <div class="auth-section" id="authSection">
+            <div class="auth-section hidden" id="authSection">
                 <div id="g_id_onload" data-client_id="439714968719-ko13oc35j978s6oc47rvihutl2omrc98.apps.googleusercontent.com" data-callback="handleCredentialResponse" data-auto_prompt="false"></div>
                 <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left" data-width="300"></div>
-                <p class="auth-note">sign in with google required only for xpclient</p>
+                <p class="auth-note">sign in with google to access xpclient</p>
                 <p class="auth-emails">authorized: e42xec@gmail.com, xpknown@gmail.com</p>
+                <button onclick="hideAuthSection()" style="margin-top:15px;padding:8px 20px;background:transparent;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.7);cursor:pointer;border-radius:4px;font-family:'instrument serif',serif;">cancel</button>
             </div>
         </div>
     </div>

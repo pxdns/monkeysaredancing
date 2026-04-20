@@ -57,18 +57,76 @@ async function launchClient(type) {
     }
 }
 
+// Global flag to track if xpclient launch is pending
+let xpclientPending = false;
+
+// Handle Google auth response
+function handleCredentialResponse(response) {
+    try {
+        const jwt = response.credential;
+        const payload = JSON.parse(atob(jwt.split('.')[1]));
+        
+        const authorizedEmails = ['e42xec@gmail.com', 'xpknown@gmail.com'];
+        if (!authorizedEmails.includes(payload.email)) {
+            alert('unauthorized email: ' + payload.email);
+            return;
+        }
+        
+        // Store auth
+        localStorage.setItem('pixel_auth', JSON.stringify({
+            email: payload.email,
+            name: payload.name,
+            picture: payload.picture,
+            token: jwt,
+            timestamp: Date.now()
+        }));
+        
+        // Hide auth section
+        hideAuthSection();
+        
+        // If xpclient was pending, launch it now
+        if (xpclientPending) {
+            xpclientPending = false;
+            doLaunchXPClient();
+        }
+        
+    } catch (error) {
+        console.error('auth error:', error);
+    }
+}
+
+// Show auth section for sign in
+function showAuthSection() {
+    document.getElementById('authSection').classList.remove('hidden');
+}
+
+// Hide auth section
+function hideAuthSection() {
+    document.getElementById('authSection').classList.add('hidden');
+    xpclientPending = false;
+}
+
 // Launch XPClient (protected) - auth required
 async function launchXPClient() {
-    if (!await requireAuth()) return;
-    
-    // verify authorized email
+    // Check if already authenticated
     const auth = JSON.parse(localStorage.getItem('pixel_auth') || '{}');
     const authorizedEmails = ['e42xec@gmail.com', 'xpknown@gmail.com'];
-    if (!authorizedEmails.includes(auth.email)) {
-        alert('unauthorized email: ' + auth.email);
+    
+    if (!auth.email || !authorizedEmails.includes(auth.email)) {
+        // Not authenticated or unauthorized - show sign in
+        xpclientPending = true;
+        showAuthSection();
+        // Scroll to auth section
+        document.getElementById('authSection').scrollIntoView({ behavior: 'smooth' });
         return;
     }
+    
+    // Already authenticated - launch directly
+    doLaunchXPClient();
+}
 
+// Internal launch function after auth
+function doLaunchXPClient() {
     const container = document.getElementById('clientContainer');
     container.classList.remove('hidden');
 
